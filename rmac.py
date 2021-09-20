@@ -111,7 +111,7 @@ if __name__ == "__main__":
     t1 = datetime.now().time()
     vector_query=[]
     for img in dataset:
-        print("i=",i)
+        print("image ",i)
         i+=1
         file = "query/"+img
         x=preprocessImageAndGetInput2(file)
