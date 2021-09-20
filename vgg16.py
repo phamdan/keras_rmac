@@ -48,10 +48,10 @@ def VGG16(weights_path = None, input_shape = (3, 224, 224)):
     x = MaxPooling2D((2, 2), strides=(2, 2), name='block5_pool')(x)
 
     # Classification block
-    x = Flatten(name='flatten')(x)
-    x = Dense(4096, activation='relu', name='fc1')(x)
-    x = Dense(4096, activation='relu', name='fc2')(x)
-    x = Dense(1000, activation='softmax', name='predictions')(x)
+    #x = Flatten(name='flatten')(x)
+    #x = Dense(4096, activation='relu', name='fc1')(x)
+    #x = Dense(4096, activation='relu', name='fc2')(x)
+    #x = Dense(1000, activation='softmax', name='predictions')(x)
 
     # Create model
     model = Model(img_input, x)
