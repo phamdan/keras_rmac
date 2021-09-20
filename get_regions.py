@@ -36,13 +36,12 @@ def rmac_regions(W, H, L):
 
         wl = np.floor(2*w/(l+1))
         wl2 = np.floor(wl/2 - 1)
-
-        b = (W - wl) / (l + Wd - 1)
+        b = (W - wl) / ((l + Wd - 1)+0.000000000000000000000000000001)
         if np.isnan(b): # for the first level
             b = 0
         cenW = np.floor(wl2 + np.arange(0,l+Wd)*b) - wl2 # center coordinates
 
-        b = (H-wl)/(l+Hd-1)
+        b = (H-wl)/((l+Hd-1)+0.000000000000000000000000000001)
         if np.isnan(b): # for the first level
             b = 0
         cenH = np.floor(wl2 + np.arange(0,l+Hd)*b) - wl2 # center coordinates

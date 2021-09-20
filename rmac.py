@@ -109,9 +109,9 @@ if __name__ == "__main__":
     dataset= os.listdir("query/")
     from datetime import datetime
     t1 = datetime.now().time()
-    vector_dataset=[]
+    vector_query=[]
     for img in dataset:
-        print(i)
+        print("i=",i)
         i+=1
         file = "query/"+img
         x=preprocessImageAndGetInput2(file)
