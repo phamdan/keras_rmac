@@ -12,8 +12,10 @@ from get_regions import rmac_regions, get_size_vgg_feat_map
 import scipy.io
 import numpy as np
 import utils
+from utils import target_size
+from utils import batch
 ########################
-
+from datetime import datetime
 from keras import backend as K
 import keras
 import keras
@@ -81,41 +83,45 @@ def rmac(input_shape, num_rois):
     model.layers[-4].set_weights([w, b])
 
     return model
-def preprocessImageAndGetInput2(linkImage):
+def preprocessImage(linkImage):
     
-    img = image.load_img(linkImage)
+    img = image.load_img(linkImage,target_size=target_size)
 
     # Resize
-    scale = utils.IMG_SIZE / max(img.size)
-    new_size = (int(np.ceil(scale * img.size[0])), int(np.ceil(scale * img.size[1])))
-#     print('Original size: %s, Resized image: %s' %(str(img.size), str(new_size)))
-    img = img.resize(new_size)
+#     scale = utils.IMG_SIZE / max(img.size)
+#     new_size = (int(np.ceil(scale * img.size[0])), int(np.ceil(scale * img.size[1])))
+# #     print('Original size: %s, Resized image: %s' %(str(img.size), str(new_size)))
+#     img = img.resize(new_size)
 
     # Mean substraction
     x = image.img_to_array(img)
     x = np.expand_dims(x, axis=0)
     x = utils.preprocess_image(x)
     return x
-def get_vector(x): #params tensor image 
-    Wmap, Hmap = get_size_vgg_feat_map(x.shape[3], x.shape[2])
-    regions = rmac_regions(Wmap, Hmap, 3)
-    model = rmac((x.shape[1], x.shape[2], x.shape[3]), len(regions))
+def get_vector(x,regions,model): #params tensor image 
     # Compute RMAC vector
     RMAC = model.predict([x, np.expand_dims(regions, axis=0)])
     return RMAC
 
 if __name__ == "__main__":
-    i=0
-    dataset= os.listdir("query/")
-    from datetime import datetime
+
+    #init model
+    Wmap, Hmap = get_size_vgg_feat_map(target_size[0], target_size[1])
+    regions = rmac_regions(Wmap, Hmap, 3)
+    model = rmac((3, target_size[0], target_size[1]), len(regions))
+
+    #get vector query
     t1 = datetime.now().time()
+    query= os.listdir("query/")
     vector_query=[]
-    for img in dataset:
-        print("image ",i)
-        i+=1
+    for img in query:
         file = "query/"+img
-        x=preprocessImageAndGetInput2(file)
-        RMAC=get_vector(x)
-        vector_query.append(RMAC)
+        x=preprocessImage(file)
+        # Load RMAC model
+        RMAC=get_vector(x,regions,model)
+        vector_query.append(RMAC[-1])
     t2 = datetime.now().time()
+    print("t1 = ",t1)
+    print("t2 = ",t2)
+
     
