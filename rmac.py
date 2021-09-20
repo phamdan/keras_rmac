@@ -48,6 +48,7 @@ def rmac(input_shape, num_rois):
 
     # Load VGG16
 
+    
     # vgg16_model= keras.applications.VGG16(include_top=False, input_shape=(3,224,224),weights=utils.DATA_DIR + utils.WEIGHTS_FILE)
     resnet50_model= keras.applications.ResNet50(include_top=False, input_shape=(3,224,224),weights="imagenet")
     # Regions as input
@@ -55,18 +56,18 @@ def rmac(input_shape, num_rois):
 
     # ROI pooling
 
-    x = RoiPooling([1], num_rois)([resnet50_model.layers[-1].output, in_roi])
+    x = RoiPooling([1], num_rois)([resnet50_model.layers[-2].output, in_roi])
 
     # Normalization
     x = Lambda(lambda x: K.l2_normalize(x, axis=2), name='norm1')(x)
 
     # PCA
-    x = TimeDistributed(Dense(2048, name='pca',
-                              kernel_initializer='identity',
-                              bias_initializer='zeros'))(x)
+    # x = TimeDistributed(Dense(2048, name='pca',
+    #                           kernel_initializer='identity',
+    #                           bias_initializer='zeros'))(x)
 
     # Normalization
-    x = Lambda(lambda x: K.l2_normalize(x, axis=2), name='pca_norm')(x)
+    # x = Lambda(lambda x: K.l2_normalize(x, axis=2), name='pca_norm')(x)
 
     # Addition
     rmac = Lambda(addition, output_shape=(2048,), name='rmac')(x)
@@ -78,10 +79,10 @@ def rmac(input_shape, num_rois):
     model = Model([resnet50_model.input, in_roi], rmac_norm)
 
     # Load PCA weights
-    mat = scipy.io.loadmat(utils.DATA_DIR + utils.PCA_FILE)
-    b = np.squeeze(mat['bias'], axis=1)
-    w = np.transpose(mat['weights'])
-    model.layers[-4].set_weights([w, b])
+    # mat = scipy.io.loadmat(utils.DATA_DIR + utils.PCA_FILE)
+    # b = np.squeeze(mat['bias'], axis=1)
+    # w = np.transpose(mat['weights'])
+    # model.layers[-4].set_weights([w, b])
 
     return model
 def preprocessImage(linkImage):
@@ -115,7 +116,9 @@ if __name__ == "__main__":
     x=preprocessImage(file)
     # Load RMAC model
     RMAC=get_vector(x,regions,model)
+    print(RMAC.shape)
     print(RMAC)
+
 
     # #get vector query
     # t1 = datetime.now().time()
