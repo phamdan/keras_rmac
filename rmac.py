@@ -5,15 +5,28 @@ from keras.layers import Lambda, Dense, TimeDistributed, Input
 from keras.models import Model
 from keras.preprocessing import image
 import keras.backend as K
-
+import keras
 from vgg16 import VGG16
 from RoiPooling import RoiPooling
 from get_regions import rmac_regions, get_size_vgg_feat_map
-
 import scipy.io
 import numpy as np
 import utils
+########################
 
+from keras import backend as K
+import keras
+import keras
+from keras.preprocessing.image import ImageDataGenerator
+from keras.applications.vgg16 import preprocess_input
+from keras import Model, layers
+from keras.preprocessing import image
+from keras.models import load_model, model_from_json
+import PIL
+import os
+# from keras import backend as K
+# K.set_image_dim_ordering('th') 
+########################
 
 def addition(x):
     sum = K.sum(x, axis=1)
@@ -31,12 +44,14 @@ def weighting(input):
 def rmac(input_shape, num_rois):
 
     # Load VGG16
-    vgg16_model = VGG16(utils.DATA_DIR + utils.WEIGHTS_FILE, input_shape)
 
+    vgg16_model = VGG16(utils.DATA_DIR + utils.WEIGHTS_FILE, input_shape)
+  
     # Regions as input
     in_roi = Input(shape=(num_rois, 4), name='input_roi')
 
     # ROI pooling
+
     x = RoiPooling([1], num_rois)([vgg16_model.layers[-1].output, in_roi])
 
     # Normalization
@@ -67,9 +82,12 @@ def rmac(input_shape, num_rois):
 
     return model
 
-def preprocessImageAndGetInput2(linkImage):
-    
-    img = image.load_img(linkImage)
+
+if __name__ == "__main__":
+
+    # Load sample image
+    file = utils.DATA_DIR + 'sample.jpg'
+    img = image.load_img(file)
 
     # Resize
     scale = utils.IMG_SIZE / max(img.size)
@@ -81,12 +99,7 @@ def preprocessImageAndGetInput2(linkImage):
     x = image.img_to_array(img)
     x = np.expand_dims(x, axis=0)
     x = utils.preprocess_image(x)
-    return x
-if __name__ == "__main__":
 
-    # Load sample image
-    file = utils.DATA_DIR + 'sample.jpg'
-    x=preprocessImageAndGetInput2(file)
     # Load RMAC model
     Wmap, Hmap = get_size_vgg_feat_map(x.shape[3], x.shape[2])
     regions = rmac_regions(Wmap, Hmap, 3)
