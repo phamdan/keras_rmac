@@ -4,8 +4,8 @@ DATA_DIR = 'data/'
 WEIGHTS_FILE = 'vgg16_weights_th_dim_ordering_th_kernels_notop.h5'
 PCA_FILE = 'PCAmatrices.mat'
 IMG_SIZE = 1024
-
-
+target_size=(224,224)
+batch=1
 def save_obj(obj, filename):
     f = open(filename, 'wb')
     pickle.dump(obj, f)
