@@ -6,7 +6,7 @@ from keras.models import Model
 from keras.preprocessing import image
 import keras.backend as K
 import keras
-from vgg16 import VGG16
+# from vgg16 import VGG16
 from RoiPooling import RoiPooling
 from get_regions import rmac_regions, get_size_vgg_feat_map
 import scipy.io
@@ -26,8 +26,9 @@ from keras.preprocessing import image
 from keras.models import load_model, model_from_json
 import PIL
 import os
-# from keras import backend as K
-# K.set_image_dim_ordering('th') 
+# from keras.applications import vgg16
+from keras import backend as K
+K.set_image_dim_ordering('th') 
 ########################
 
 def addition(x):
@@ -47,20 +48,20 @@ def rmac(input_shape, num_rois):
 
     # Load VGG16
 
-    vgg16_model = VGG16(utils.DATA_DIR + utils.WEIGHTS_FILE, input_shape)
-  
+    # vgg16_model= keras.applications.VGG16(include_top=False, input_shape=(3,224,224),weights=utils.DATA_DIR + utils.WEIGHTS_FILE)
+    resnet50_model= keras.applications.ResNet50(include_top=False, input_shape=(3,224,224),weights="imagenet")
     # Regions as input
     in_roi = Input(shape=(num_rois, 4), name='input_roi')
 
     # ROI pooling
 
-    x = RoiPooling([1], num_rois)([vgg16_model.layers[-1].output, in_roi])
+    x = RoiPooling([1], num_rois)([resnet50_model.layers[-1].output, in_roi])
 
     # Normalization
     x = Lambda(lambda x: K.l2_normalize(x, axis=2), name='norm1')(x)
 
     # PCA
-    x = TimeDistributed(Dense(512, name='pca',
+    x = TimeDistributed(Dense(2048, name='pca',
                               kernel_initializer='identity',
                               bias_initializer='zeros'))(x)
 
@@ -68,13 +69,13 @@ def rmac(input_shape, num_rois):
     x = Lambda(lambda x: K.l2_normalize(x, axis=2), name='pca_norm')(x)
 
     # Addition
-    rmac = Lambda(addition, output_shape=(512,), name='rmac')(x)
+    rmac = Lambda(addition, output_shape=(2048,), name='rmac')(x)
 
     # # Normalization
     rmac_norm = Lambda(lambda x: K.l2_normalize(x, axis=1), name='rmac_norm')(rmac)
 
     # Define model
-    model = Model([vgg16_model.input, in_roi], rmac_norm)
+    model = Model([resnet50_model.input, in_roi], rmac_norm)
 
     # Load PCA weights
     mat = scipy.io.loadmat(utils.DATA_DIR + utils.PCA_FILE)
@@ -110,18 +111,24 @@ if __name__ == "__main__":
     regions = rmac_regions(Wmap, Hmap, 3)
     model = rmac((3, target_size[0], target_size[1]), len(regions))
 
-    #get vector query
-    t1 = datetime.now().time()
-    query= os.listdir("query/")
-    vector_query=[]
-    for img in query:
-        file = "query/"+img
-        x=preprocessImage(file)
-        # Load RMAC model
-        RMAC=get_vector(x,regions,model)
-        vector_query.append(RMAC[-1])
-    t2 = datetime.now().time()
-    print("t1 = ",t1)
-    print("t2 = ",t2)
+    file = utils.DATA_DIR + 'sample.jpg'
+    x=preprocessImage(file)
+    # Load RMAC model
+    RMAC=get_vector(x,regions,model)
+    print(RMAC)
+
+    # #get vector query
+    # t1 = datetime.now().time()
+    # query= os.listdir("query/")
+    # vector_query=[]
+    # for img in query:
+    #     file = "query/"+img
+    #     x=preprocessImage(file)
+    #     # Load RMAC model
+    #     RMAC=get_vector(x,regions,model)
+    #     vector_query.append(RMAC[-1])
+    # t2 = datetime.now().time()
+    # print("t1 = ",t1)
+    # print("t2 = ",t2)
 
     
