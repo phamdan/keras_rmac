@@ -37,7 +37,7 @@ def rmac(input_shape, num_rois):
     in_roi = Input(shape=(num_rois, 4), name='input_roi')
 
     # ROI pooling
-    x = RoiPooling([1], num_rois)([vgg16_model.layers[-5].output, in_roi])
+    x = RoiPooling([1], num_rois)([vgg16_model.layers[-1].output, in_roi])
 
     # Normalization
     x = Lambda(lambda x: K.l2_normalize(x, axis=2), name='norm1')(x)
@@ -67,12 +67,9 @@ def rmac(input_shape, num_rois):
 
     return model
 
-
-if __name__ == "__main__":
-
-    # Load sample image
-    file = utils.DATA_DIR + 'sample.jpg'
-    img = image.load_img(file)
+def preprocessImageAndGetInput2(linkImage):
+    
+    img = image.load_img(linkImage)
 
     # Resize
     scale = utils.IMG_SIZE / max(img.size)
@@ -84,7 +81,12 @@ if __name__ == "__main__":
     x = image.img_to_array(img)
     x = np.expand_dims(x, axis=0)
     x = utils.preprocess_image(x)
+    return x
+if __name__ == "__main__":
 
+    # Load sample image
+    file = utils.DATA_DIR + 'sample.jpg'
+    x=preprocessImageAndGetInput2(file)
     # Load RMAC model
     Wmap, Hmap = get_size_vgg_feat_map(x.shape[3], x.shape[2])
     regions = rmac_regions(Wmap, Hmap, 3)

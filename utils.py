@@ -1,7 +1,7 @@
 import pickle
 
 DATA_DIR = 'data/'
-WEIGHTS_FILE = 'vgg16_weights_th_dim_ordering_th_kernels.h5'
+WEIGHTS_FILE = 'vgg16_weights_th_dim_ordering_th_kernels_notop.h5'
 PCA_FILE = 'PCAmatrices.mat'
 IMG_SIZE = 1024
 
@@ -10,14 +10,14 @@ def save_obj(obj, filename):
     f = open(filename, 'wb')
     pickle.dump(obj, f)
     f.close()
-    print "Object saved to %s." % filename
+    print ("Object saved to %s." % filename)
 
 
 def load_obj(filename):
     f = open(filename, 'rb')
     obj = pickle.load(f)
     f.close()
-    print "Object loaded from %s." % filename
+    print ("Object loaded from %s." % filename)
     return obj
 
 
