@@ -81,33 +81,41 @@ def rmac(input_shape, num_rois):
     model.layers[-4].set_weights([w, b])
 
     return model
-
-
-if __name__ == "__main__":
-
-    # Load sample image
-    file = utils.DATA_DIR + 'sample.jpg'
-    img = image.load_img(file)
+def preprocessImageAndGetInput2(linkImage):
+    
+    img = image.load_img(linkImage)
 
     # Resize
     scale = utils.IMG_SIZE / max(img.size)
     new_size = (int(np.ceil(scale * img.size[0])), int(np.ceil(scale * img.size[1])))
-    print('Original size: %s, Resized image: %s' %(str(img.size), str(new_size)))
+#     print('Original size: %s, Resized image: %s' %(str(img.size), str(new_size)))
     img = img.resize(new_size)
 
     # Mean substraction
     x = image.img_to_array(img)
     x = np.expand_dims(x, axis=0)
     x = utils.preprocess_image(x)
-
-    # Load RMAC model
+    return x
+def get_vector(x): #params tensor image 
     Wmap, Hmap = get_size_vgg_feat_map(x.shape[3], x.shape[2])
     regions = rmac_regions(Wmap, Hmap, 3)
-    print('Loading RMAC model...')
     model = rmac((x.shape[1], x.shape[2], x.shape[3]), len(regions))
-
     # Compute RMAC vector
-    print('Extracting RMAC from image...')
     RMAC = model.predict([x, np.expand_dims(regions, axis=0)])
-    print('RMAC size: %s' % RMAC.shape[1])
-    print('Done!')
+    return RMAC
+
+if __name__ == "__main__":
+    i=0
+    dataset= os.listdir("query/")
+    from datetime import datetime
+    t1 = datetime.now().time()
+    vector_dataset=[]
+    for img in dataset:
+        print(i)
+        i+=1
+        file = "query/"+img
+        x=preprocessImageAndGetInput2(file)
+        RMAC=get_vector(x)
+        vector_query.append(RMAC)
+    t2 = datetime.now().time()
+    
